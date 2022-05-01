@@ -1,0 +1,22 @@
+[
+  {
+    "stmt": "SELECT * FROM sqlite_master;",
+    "header": ["type", "name", "tbl_name", "rootpage", "sql"],
+    "rows": [
+      [
+        "table",
+        "users",
+        "users",
+        "3",
+        "CREATE TABLE users (username TEXT, password TEXT, initial balance INTEGER)"
+      ],
+      [
+        "table",
+        "SaveKeys",
+        "SaveKeys",
+        "4",
+        "CREATE TABLE SaveKeys (username TEXT, password BLOB, public_key BLOB, private_key BLOB)"
+      ]
+    ]
+  }
+]
