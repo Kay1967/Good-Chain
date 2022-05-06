@@ -22,12 +22,12 @@ class SignUpService:
   prv_key, pub_key = Transactions.Asym.generate_keys()
 
   def __init__(self, userRepository):
-    #self.tenant = tenant
+    
     self.userRepository = userRepository
-    #self.loggingRepository = loggingRepository
+    
     
   def SignUp(self):
-    #self.userRepository.CreateTransactionList(self.Sender_username, self.Receiver_username, self.Tx_value, self.Tx_fee)
+    
     username = input("please register a new username: ") 
     def reg_user():
       user_name = username
@@ -52,7 +52,8 @@ class SignUpService:
       if password == password_repeat:
         try:
           initialbalance=50
-          self.userRepository.CreateUser(username, password, initialbalance)
+          confirmation_status = 0
+          self.userRepository.CreateUser(username, password, initialbalance, confirmation_status)
          
           public_key = SignUpService.pub_key
           private_key = SignUpService.prv_key
@@ -68,7 +69,7 @@ class SignUpService:
           byte_password = bytes(str(password), 'UTF-8')
           encrypt_password = Transactions.Asym.encrypt(byte_password, public_key)
           self.userRepository.SaveKeys(username, encrypt_password, pbc_ser, prv_ser)
-          self.userRepository.CreateUsersBalance(username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained)
+          self.userRepository.CreateUsersBalance(username, initialbalance, amount_sent = 0, amount_received = 0, fee_paid = 0, fee_gained = 0)
         except:
           raise Exception ("password does not match!")
       else:

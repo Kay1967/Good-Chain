@@ -3,11 +3,9 @@ import time
 
 from datetime import datetime as dt
 from Component.UserInterface import *
-# from Domain.Advisor import Advisor
-# from Domain.SuperAdmin import SuperAdmin
-# from Domain.SysAdmin import SysAdmin
+
 import Domain
-#from Domain.User import *
+
 from termcolor import colored
 import Service
 from Service.SignUpService import *
@@ -17,14 +15,12 @@ from Service.UserService import *
 
 class LoginService:
   loggedin = False
+
   def __init__ (self, userRepository, userService):
     self.userRepository = userRepository
     self.userService = userService
     
-    #self.loggingRepository = loggingRepository
-    #self.permissionRepository = permissionRepository
   def checks(self):
-    #self.userService.CheckPool()
     check_pool_valid = self.userRepository.GetFromPool()
     recheck = []
     for check in check_pool_valid:
@@ -40,6 +36,24 @@ class LoginService:
         os.system('color')
         print(f"pool number {hashed_before[i][0]} is", colored('tempered!', 'blue'))
         time.sleep(0.2)
+
+    check_chain_valid = self.userRepository.GetAllBlocks()
+    recheck = []
+    for check in check_chain_valid:
+      rehashed = User.hash_transaction(self, check)
+      recheck.append(rehashed)
+    
+    b = False
+    hashed_before = self.userRepository.GetAllHashForChain()
+    for i in range(len(hashed_before)): 
+      if hashed_before[i][1] == recheck[i]:
+        b = True
+        print(f"Block number {hashed_before[i][0]} in the chain is verified!")
+        time.sleep(0.2)  
+      else:
+        b = False
+        print(f"Block number {hashed_before[i][0]} in the chain is", colored('tempered!', 'red'))
+        time.sleep(0.2)  
 
   def GenesisBlock(self):
     bb = BlocklService.Block(self)
@@ -63,17 +77,8 @@ class LoginService:
       else:
           self.loggedin = True
           self.tenant = user
-          #self.setPermissions()
-          #self.userRepository.UpdateLastLogin(dt.now(), self.tenant.username)
+          
     except ValueError as error: self.CreateLogFromException(self.login.__name__, error); return
-
-  # def setPermissions(self):
-  #   if type(self.tenant) is Advisor:
-  #       self.tenant.hasPermissions = self.permissionRepository.GetAllPermissionsForAdvisor()
-  #   if type(self.tenant) is SysAdmin:
-  #       self.tenant.hasPermissions = self.permissionRepository.GetAllPermissionsForSysAdmin()
-  #   if type(self.tenant) is SuperAdmin:
-  #       self.tenant.hasPermissions = self.permissionRepository.GetAllPermissionsForSuperAdmin()
 
   def close():
     pass
@@ -93,4 +98,4 @@ class LoginService:
       print(exception.args[0])
     else:
       print("Login failed")
-    #self.loggingRepository.CreateLog("Anonymous", descriptionOfActivity, f"ValueError:{exception.args[0]}", "1")
+    

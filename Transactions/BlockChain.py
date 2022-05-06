@@ -13,12 +13,13 @@ class CBlock:
   previousBlock = None
   data = None
   nonce = 0
-
+  duration = 0
   def __init__(self, data, previousBlock):
       self.data = data
       self.previousBlock = previousBlock
       self.CurrentHash = hash_func(str(data))
       self.nonce = 1
+      self.duration = 0
       if previousBlock is not None:
         self.previousHash = self.previousBlock
 
@@ -26,8 +27,10 @@ class CBlock:
     leading_str = '0' * leading_zeros
     if self.previousBlock is not None:
         self.previousHash = self.previousBlock #.currentHash
+    
+    #start = time.time()
     for Nonce in range(1000000):
-      start = time.time()
+      #start = time.time()
       self.nonce = Nonce
       block_to_be_mined = str(self.data) + str(Nonce)
       if self.previousBlock != None:
@@ -35,13 +38,16 @@ class CBlock:
       block_to_be_mined = hash_func(block_to_be_mined)
       if block_to_be_mined.startswith(leading_str):
         self.currentHash = block_to_be_mined
-        print(f"it is the nounce: {self.nonce}")
-        end = time.time()
-        duration = end - start
-        time.sleep(5)
-        print(f"It took {duration} to mine this block")
-        return
-
+        # print(f"it is the nounce: {self.nonce}")
+        # end = time.time()
+        # self.duration = end - start
+        #time.sleep(5)
+        #print(f"It took {self.duration} to mine this block")
+        #return
+    # end = time.time()
+    # self.duration = end - start
+    # print(f"It took {self.duration} to mine this block")
+    return
   def is_valid_hash(self):
     currentBlock = self
     check = True

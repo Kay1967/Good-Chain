@@ -1,3 +1,5 @@
+from heapq import nlargest
+from operator import itemgetter
 import re
 from Repository.UserRepository import *
 from Service.UserService import *
@@ -49,11 +51,14 @@ class Client:
       for j in range(len(list_validTx)):
         if check_pool_valid[i][0] == list_validTx[j][0]:
           txlist_for_mine.append(check_pool_valid[i])
-    return txlist_for_mine
+    #return txlist_for_mine
+    if len(check_pool_valid) >= 5 and len(check_pool_valid) <= 10:
+      count = len(check_pool_valid)
+      top_largest = nlargest(count, check_pool_valid, key=itemgetter(4))
+      return check_pool_valid
 
   def KeysForMining(self, tenant):
-    # txlist_for_keys = self.Validtx()
-    # for keys in txlist_for_keys:
+
       object_sender = self.userRepository.GetKeys(tenant[0])
       if object_sender is not None:
         pubkey_sender = object_sender[2]

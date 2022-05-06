@@ -1,4 +1,4 @@
-#from Service.LogService import LogSerfrom typing_extensions import Self
+
 from Service.LoginService import LoginService
 from startup import ServiceCollection
 from Component.UserInterface import UserInterfaceComponent
@@ -62,29 +62,6 @@ if __name__ == "__main__":
         mainHeading = CreateMainMenuHeader(serviceCollection.LoginService.tenant[0], type(serviceCollection.LoginService.tenant).__name__)
         mainInterface = UserInterfaceComponent(mainView, False, mainHeading)
         mainInterface.run()
-      
-        # if mainView.GetMenu()[-1][0] == 0:
-        #   loginInterface = UserInterfaceComponent(loginView, True, Heading)
-        #   loginInterface.run()
-        #   if serviceCollection.LoginService.loggedin:
-        #     serviceCollection.ConfigureServicesOnLogin()
-        #     mainView = MainView(serviceCollection.LoginService.tenant, 
-        #                         serviceCollection.LoginService,
-        #                         serviceCollection.UserService,
-        #                         serviceCollection.SignUpService,
-        #                         serviceCollection.BlockService
-        #                         ) 
-                        
-        #     mainHeading = CreateMainMenuHeader(serviceCollection.LoginService.tenant[0], type(serviceCollection.LoginService.tenant).__name__)
-        #     mainInterface = UserInterfaceComponent(mainView, False, mainHeading)
-        #     mainInterface.run()
-        #mainInterface.run()
+
         dbContext.conn.close()
-    # if serviceCollection.SignUpService.loggedin:
-    #     serviceCollection.ConfigureServicesOnLogin()
-    #     mainView = MainView(serviceCollection.SignUpService.tenant,
-    #                           serviceCollection.SignUpService)
-    #     mainHeading = CreateMainMenuHeader(serviceCollection.SignUpService.tenant[0], type(serviceCollection.SignUpService.tenant).__name__ )
-    #     mainInterface = UserInterfaceComponent(mainView, False, mainHeading)
-    #     mainInterface.run()
-    #     dbContext.conn.close()
+    

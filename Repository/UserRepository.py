@@ -2,24 +2,19 @@ from sqlite3 import SQLITE_TRANSACTION
 from flask import g
 from datetime import datetime as dt
 import Domain
-from Domain.User import User
-from Record.UserRecord import UserRecord
+from Domain.User import *
+#
 import hashlib
 from hashlib import sha256
 import Transactions
 from Transactions.Asym import *
-#from Helper.EncryptionHelper import EncryptionHelper
+
 hash_func = lambda x: sha256(x.encode('utf-8')).hexdigest()
 class UserRepository:
 
   def __init__ (self, db, tenant = None):
     self.dbContext = db
-    #self.loggingRepository = loggingRepository
-
-    tenantIsDefined = isinstance(tenant, User)
-    if tenantIsDefined:
-      self.tenant = tenant
-
+    
   def GetUser(self, username, login = False):
     queryParameters = (username,)
     sql_statement = '''SELECT * from users WHERE LOWER(username)=LOWER(?)'''
@@ -44,13 +39,9 @@ class UserRepository:
     allUsers = []
     for userRecord in userRecords:
       allUsers.append(userRecord)
-      # if len(userRecords)==0:
-      #   print('There is no component named %s'%userRecord)
-      # else:
-      #   print('Component %s found with rowids %s'%(userRecord,','.join(map(str, next(zip(*userRecords))))))
+      
     return allUsers 
 
-  # Generic for updating password for all users
   def GetKeys(self, username):
     queryParameters = (username,)
     sql_statement = '''SELECT * from SaveKeys WHERE LOWER(username)=LOWER(?)'''
@@ -58,12 +49,42 @@ class UserRepository:
     userRecord = get_keys
     return userRecord
   
-  def CreateUser(self, username, password, initialbalance):
+  def CreateUser(self, username, password, initialbalance, confirmation_status):
     hashed_password = hash_func(str(password))
-    Values = (username, hashed_password, initialbalance)
-    sql_statement = '''INSERT INTO users (username, password, initialbalance) VALUES (?,?,?)'''
+    Values = (username, hashed_password, initialbalance, confirmation_status)
+    sql_statement = '''INSERT INTO users (username, password, initialbalance, confirmation_status) VALUES (?,?,?,?)'''
     self.dbContext.executeAndCommit(sql_statement, Values)
-    #except Exception as error: self.loggingRepository.CreateLog(self.tenant.username, f"{self.CreateUser.__name__}", f"DatabaseException {error}", 1)
+  
+  def CreateTempBlock(self, username, nonce, previous_hash, data, current_hash, duration):
+    today =  dt.now()
+    date = today.strftime("%d-%m-%Y")
+    time = today.strftime("%H:%M:%S")
+    Values = (username, nonce, previous_hash, data, current_hash, duration, date, time)
+    sql_statement = '''INSERT INTO TempBlock (username, nonce, previous_hash, data, current_hash, duration, date, time) VALUES (?,?,?,?,?,?,?,?)'''
+    self.dbContext.executeAndCommit(sql_statement, Values)
+
+  def GetAllFromTempBlock(self):
+    allUsers = []
+    sql_statement = '''SELECT * from TempBlock'''
+    try: 
+      userRecords = self.dbContext.executeAndFetchAll(sql_statement, None)
+      if userRecords is None:
+        allUsers = None
+        return allUsers
+    except:
+      raise ValueError ("nothing found")
+
+    for userRecord in userRecords:
+      allUsers.append(userRecord)
+    return allUsers 
+
+  def GetLastTempBlock(self):
+    queryParameters = None
+    sql_statement = '''SELECT * from TempBlock ORDER BY Id_No DESC LIMIT 1'''
+    get_transaction =  self.dbContext.executeAndFetchOne(sql_statement, queryParameters)
+    userRecord = get_transaction
+    return userRecord  
+
   def CreateBlockChain(self, nonce, previous_hash, data, current_hash):
     today =  dt.now()
     date = today.strftime("%d-%m-%Y")
@@ -92,30 +113,24 @@ class UserRepository:
   
   
   def CreateUsersBalance(self, username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained):
-    # today =  dt.now()
-    # date = today.strftime("%d-%m-%Y")
-    # time = today.strftime("%H:%M:%S")
     
     Values = (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained)
     sql_statement = '''INSERT INTO UsersBalance (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained) VALUES (?,?,?,?,?,?)'''
     self.dbContext.executeAndCommit(sql_statement, Values)
 
   def SaveKeys(self, username, password, publickey, privatekey):
-    #hashed_password = hash_func(str(password))
-   # hashed_publicKey = hash_func(str(publickey))
-    #hashed_privateKey = hash_func(str(privatekey))
+
     Values = (username, password, publickey, privatekey)
     sql_statement = '''INSERT INTO SaveKeys (username, password, public_key, private_key) VALUES (?,?,?,?)'''
     self.dbContext.executeAndCommit(sql_statement, Values)
   
   def CreateTransactionPool(self, Sender_username, Receiver_username, Tx_value, Tx_fee):
-    # today =  dt.now()
-    # date = today.strftime("%d-%m-%Y")
-    # time = today.strftime("%H:%M:%S")
-    status = "pending"
-
-    Values = (Sender_username, Receiver_username, Tx_value, Tx_fee, status)
-    sql_statement = '''INSERT INTO TransactionPool (Sender_username, Receiver_username, Tx_value, Tx_fee, status) VALUES (?,?,?,?,?)'''
+    today =  dt.now()
+    date = today.strftime("%d-%m-%Y")
+    time = today.strftime("%H:%M:%S")
+   
+    Values = (Sender_username, Receiver_username, Tx_value, Tx_fee, date, time)
+    sql_statement = '''INSERT INTO TransactionPool (Sender_username, Receiver_username, Tx_value, Tx_fee, date, time) VALUES (?,?,?,?,?,?)'''
     self.dbContext.executeAndCommit(sql_statement, Values)
   
   def GetLastFromPool(self):
@@ -160,9 +175,6 @@ class UserRepository:
     sql_statement = '''SELECT * from UsersBalance WHERE LOWER(username)=LOWER(?)'''
     try: userEncrypted = self.dbContext.executeAndFetchOne(sql_statement, queryParameters)
     except: 
-      # if self.tenantIsDefined:
-      #     self.CreateLog(self.tenant.username, f"{self.GetAllLogs.__name__}", f"DatabaseException {error}", 1); return
-      #else:
       raise ValueError ("Cannot get balance of the user!")
 
     if userEncrypted is None and login is False:
@@ -173,16 +185,47 @@ class UserRepository:
     userRecord = userEncrypted
     return userRecord
 
-  def DeleteTransactie(self, username):
-    #encryptedValues = EncryptionHelper.GetEncryptedTuple((username,))
-    sql_statement = '''DELETE FROM users WHERE username =?'''
+  def UpdateUserBalance(self, status, amount, username):
+    if status == 'amount_sent':
+      Values = (amount, username)
+      sql_statement = '''UPDATE UsersBalance SET amount_sent=? WHERE username=?'''
+      try: self.dbContext.executeAndCommit(sql_statement, Values)
+      except:
+        raise ValueError ("Cannot update the column!")
+    if status == 'amount_received':
+      Values = (amount, username)
+      sql_statement = '''UPDATE UsersBalance SET amount_received=? WHERE username=?'''
+      try: self.dbContext.executeAndCommit(sql_statement, Values)
+      except:
+        raise ValueError ("Cannot update the column!")
+    if status == 'fee_paid':
+      Values = (amount, username)
+      sql_statement = '''UPDATE UsersBalance SET fee_paid=? WHERE username=?'''
+      try: self.dbContext.executeAndCommit(sql_statement, Values)
+      except:
+        raise ValueError ("Cannot update the column!")
+    if status == 'fee_gained':
+      Values = (amount, username)
+      sql_statement = '''UPDATE UsersBalance SET fee_gained=? WHERE username=?'''
+      try: self.dbContext.executeAndCommit(sql_statement, Values)
+      except:
+        raise ValueError ("Cannot update the column!")
+
+  def DeleteTransactie(self, transaction_number):
+    
+    sql_statement = '''DELETE FROM TransactionPool WHERE Tx_No =?'''
     try: self.dbContext.executeAndCommit(sql_statement)
     except:
        raise ValueError ("Cannot delete the row you required!")
-  def UpdateTransactionStatus(self, username):
-    status = "validated"
-    Values = (status, username)
-    sql_statement = '''UPDATE TransactionPool SET status=? WHERE sender_username=?'''
+    
+    sql_statement = '''DELETE FROM HashForSecurity WHERE Tx_No =?'''
+    try: self.dbContext.executeAndCommit(sql_statement)
+    except:
+       raise ValueError ("Cannot delete the row you required!")
+       
+  def UpdateConfirmationStatus(self, confirmation_status, username):
+    Values = (confirmation_status, username)
+    sql_statement = '''UPDATE users SET confirmation_status=? WHERE username=?'''
     try: self.dbContext.executeAndCommit(sql_statement, Values)
     except:
       raise ValueError ("Cannot update the column!")
@@ -209,3 +252,59 @@ class UserRepository:
     for userRecord in userRecords:
       allUsers.append(userRecord)
     return allUsers 
+
+  def CreateHashForBlock(self, hashed_blocks):
+    Values = (hashed_blocks,)
+    sql_statement = '''INSERT INTO HashForBlock (hashed_blocks) VALUES (?)'''
+    try:
+      self.dbContext.executeAndCommit(sql_statement, Values)
+    except:
+      raise ValueError("no such a table")
+
+  def GetAllHashForBlock(self):
+    allUsers = []
+    sql_statement = '''SELECT * from HashForBlock'''
+    try: 
+      userRecords = self.dbContext.executeAndFetchAll(sql_statement, None)
+      if userRecords is None:
+        allUsers = None
+        return allUsers
+    except:
+      raise ValueError ("nothing found")
+
+    for userRecord in userRecords:
+      allUsers.append(userRecord)
+    return allUsers 
+
+  def CreateHashForChain(self, hashed_blocks):
+    Values = (hashed_blocks,)
+    sql_statement = '''INSERT INTO HashForChain (hashed_blocks) VALUES (?)'''
+    try:
+      self.dbContext.executeAndCommit(sql_statement, Values)
+    except:
+      raise ValueError("no such a table")
+
+  def GetAllHashForChain(self):
+    allUsers = []
+    sql_statement = '''SELECT * from HashForChain'''
+    try: 
+      userRecords = self.dbContext.executeAndFetchAll(sql_statement, None)
+      if userRecords is None:
+        allUsers = None
+        return allUsers
+    except:
+      raise ValueError ("nothing found")
+
+    for userRecord in userRecords:
+      allUsers.append(userRecord)
+    return allUsers 
+  
+  def DeleteTempBlock(self):
+    sql_statement = '''DROP TABLE TempBlock'''
+    try: self.dbContext.executeAndCommit(sql_statement)
+    except:
+       raise ValueError ("Cannot delete the table you required!")
+    sql_statement = '''DROP TABLE HashForBlock'''
+    try: self.dbContext.executeAndCommit(sql_statement)
+    except:
+       raise ValueError ("Cannot delete the table you required!")
