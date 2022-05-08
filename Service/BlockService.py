@@ -6,7 +6,7 @@ from Transactions.BlockChain import *
 import tabulate
 from tabulate import tabulate
 from termcolor import colored
-from Domain.User import *
+#from Domain.User import *
 
 hash_func = lambda x: sha256(x.encode('utf-8')).hexdigest()
 
@@ -23,6 +23,7 @@ class BlocklService:
       leading_zeros = 2
       data = "Genesis"
       Gn = CBlock(data, None)
+      #Gn = TxBlock(data, None)
       Gn.mine(leading_zeros)
       nonce = Gn.nonce
       previous_hash = Gn.previousHash
@@ -52,17 +53,18 @@ class BlocklService:
     
     previous_block = last_block[4]
     Block = CBlock(data, previous_block)
-    start = time.time()
+    #start = time.time()
     Block.mine(leading_zeros)
-    end = time.time()
-    duration = end - start
+    #time.sleep(5)
+    #end = time.time()
+    #duration = end - start
     nonce = Block.nonce
     previous_hash = Block.previousBlock
-    #time_taken = Block.duration
-    time_taken = duration
+    time_taken = Block.duration
+    #time_taken = duration
     print(time_taken)
     current_hash = Block.CurrentHash
-    list_data_str = '-'.join([str(elem) for elem in data])
+    list_data_str = ' - '.join([str(elem) for elem in data])
     print(list_data_str)
     return nonce, previous_hash, list_data_str, current_hash, time_taken
     

@@ -112,10 +112,10 @@ class UserRepository:
     return userRecord
   
   
-  def CreateUsersBalance(self, username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained):
+  def CreateUsersBalance(self, username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained, mined_reward):
     
-    Values = (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained)
-    sql_statement = '''INSERT INTO UsersBalance (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained) VALUES (?,?,?,?,?,?)'''
+    Values = (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained, mined_reward)
+    sql_statement = '''INSERT INTO UsersBalance (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained, mined_reward) VALUES (?,?,?,?,?,?,?)'''
     self.dbContext.executeAndCommit(sql_statement, Values)
 
   def SaveKeys(self, username, password, publickey, privatekey):
@@ -185,9 +185,9 @@ class UserRepository:
     userRecord = userEncrypted
     return userRecord
 
-  def UpdateUserBalance(self, status, amount, username):
+  def UpdateUserBalance(self, status, amount,username):
     if status == 'amount_sent':
-      Values = (amount, username)
+      Values = (amount,username)
       sql_statement = '''UPDATE UsersBalance SET amount_sent=? WHERE username=?'''
       try: self.dbContext.executeAndCommit(sql_statement, Values)
       except:
@@ -210,16 +210,22 @@ class UserRepository:
       try: self.dbContext.executeAndCommit(sql_statement, Values)
       except:
         raise ValueError ("Cannot update the column!")
+    if status == 'mined_reward':
+      Values = (amount, username)
+      sql_statement = '''UPDATE UsersBalance SET mined_reward=? WHERE username=?'''
+      try: self.dbContext.executeAndCommit(sql_statement, Values)
+      except:
+        raise ValueError ("Cannot update the column!")
 
-  def DeleteTransactie(self, transaction_number):
-    
+  def DeleteTransaction(self, transaction_number):
+    Values = (transaction_number,)
     sql_statement = '''DELETE FROM TransactionPool WHERE Tx_No =?'''
-    try: self.dbContext.executeAndCommit(sql_statement)
+    try: self.dbContext.executeAndCommit(sql_statement, Values)
     except:
        raise ValueError ("Cannot delete the row you required!")
     
     sql_statement = '''DELETE FROM HashForSecurity WHERE Tx_No =?'''
-    try: self.dbContext.executeAndCommit(sql_statement)
+    try: self.dbContext.executeAndCommit(sql_statement, Values)
     except:
        raise ValueError ("Cannot delete the row you required!")
        
@@ -278,7 +284,7 @@ class UserRepository:
 
   def CreateHashForChain(self, hashed_blocks):
     Values = (hashed_blocks,)
-    sql_statement = '''INSERT INTO HashForChain (hashed_blocks) VALUES (?)'''
+    sql_statement = '''INSERT INTO HashForChain (hashed_chain) VALUES (?)'''
     try:
       self.dbContext.executeAndCommit(sql_statement, Values)
     except:
@@ -299,12 +305,14 @@ class UserRepository:
       allUsers.append(userRecord)
     return allUsers 
   
-  def DeleteTempBlock(self):
-    sql_statement = '''DROP TABLE TempBlock'''
-    try: self.dbContext.executeAndCommit(sql_statement)
+  def DeleteTempBlock(self, Id_No):
+    Values = (Id_No,)
+    sql_statement = '''DELETE FROM TempBlock WHERE Id_No=?'''
+    try: self.dbContext.executeAndCommit(sql_statement, Values)
     except:
        raise ValueError ("Cannot delete the table you required!")
-    sql_statement = '''DROP TABLE HashForBlock'''
-    try: self.dbContext.executeAndCommit(sql_statement)
+    Value = (Id_No,)
+    sql_statement = '''DELETE FROM HashForBlock WHERE Tx_No=?'''
+    try: self.dbContext.executeAndCommit(sql_statement, Value)
     except:
        raise ValueError ("Cannot delete the table you required!")

@@ -22,13 +22,7 @@ class UserInterfaceComponent:
       self.menuitems = menueitems
       self.menuoptions = [option[0] for option in self.menuitems]
       self.menufunctions = [option[2] for option in self.menuitems]
-      # self.menuoptions = [option[1] for option in self.menuitems]
-      # self.menufunctions = [option[2] for option in self.menuitems]
-      # self.menuoptions = [option[2] for option in self.menuitems]
-      # self.menufunctions = [option[2] for option in self.menuitems]
-      #self.menuoptions = [option[3] for option in self.menuitems]
-      #self.menufunctions = [option[2] for option in self.menuitems]
-      # closeOnAction defines if the interface should be closed after executing action
+      
       self.closeOnAction = closeOnAction
       print(self.menuheading)
       self.menu_display()

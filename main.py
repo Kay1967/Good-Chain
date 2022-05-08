@@ -5,6 +5,7 @@ from Component.UserInterface import UserInterfaceComponent
 from DbContext.database import * 
 from View.MainView import MainView
 from View.LoginView import LoginView
+from Domain.User import *
 import sqlite3
 from termcolor import colored
 import time
@@ -44,8 +45,8 @@ serviceCollection.ConfigureLoginDependencies()
 
 if __name__ == "__main__":
     loginService = LoginService(serviceCollection.UserRepository, serviceCollection.UserService)
-    loginService.checks()
     loginService.GenesisBlock()
+    loginService.checks()
     loginView = LoginView(serviceCollection.LoginService, serviceCollection.SignUpService, serviceCollection.BlockService)
     
     loginInterface = UserInterfaceComponent(loginView, True, Heading)
@@ -56,10 +57,12 @@ if __name__ == "__main__":
                             serviceCollection.LoginService,
                             serviceCollection.UserService,
                             serviceCollection.SignUpService,
-                            serviceCollection.BlockService
+                            serviceCollection.BlockService,
+                            serviceCollection.UserRepository
                             ) 
                     
         mainHeading = CreateMainMenuHeader(serviceCollection.LoginService.tenant[0], type(serviceCollection.LoginService.tenant).__name__)
+     
         mainInterface = UserInterfaceComponent(mainView, False, mainHeading)
         mainInterface.run()
 

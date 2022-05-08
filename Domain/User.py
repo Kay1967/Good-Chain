@@ -1,5 +1,8 @@
+import os
 import string
 import random
+from termcolor import colored
+import time
 from sys import hash_info
 import Repository
 from  Repository.UserRepository import *
@@ -33,5 +36,3 @@ class User:
     def hash_transaction(self, transaction):
       hash_info = hash_func(str(transaction))
       return hash_info
-
-      

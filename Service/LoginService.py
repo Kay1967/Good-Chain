@@ -12,6 +12,7 @@ from Service.SignUpService import *
 import Transactions
 from Transactions.Asym import *
 from Service.UserService import *
+from Domain.User import *
 
 class LoginService:
   loggedin = False
@@ -52,6 +53,7 @@ class LoginService:
         time.sleep(0.2)  
       else:
         b = False
+        os.system('color')
         print(f"Block number {hashed_before[i][0]} in the chain is", colored('tempered!', 'red'))
         time.sleep(0.2)  
 
@@ -59,6 +61,8 @@ class LoginService:
     bb = BlocklService.Block(self)
     return bb
 
+  def TemperedBlock(self):
+      pass
 
   def login(self):
     username = input("please enter username: ")

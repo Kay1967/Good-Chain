@@ -83,12 +83,12 @@ class db:
         except: 
             None
         #create wallet
-        tb_create = "CREATE TABLE UsersBalance (username TEXT, initialbalance INTEGER, amount_sent INTEGER DEFAULT 0, amount_received INTEGER DEFAULT 0, fee_paid INTEGER DEFAULT 0, fee_gained INTEGER DEFAULT 0)"
+        tb_create = "CREATE TABLE UsersBalance (username TEXT, initialbalance INTEGER, amount_sent INTEGER DEFAULT 0, amount_received INTEGER DEFAULT 0, fee_paid INTEGER DEFAULT 0, fee_gained INTEGER DEFAULT 0, mined_reward INTEGER DEFAULT 0)"
         try:
             self.cur.execute(tb_create)
            
             
-            self.cur.execute('''INSERT INTO UsersBalance (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained) VALUES (?, ?, ?, ?, ?, ?)''')
+            self.cur.execute('''INSERT INTO UsersBalance (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained, mined_reward) VALUES (?, ?, ?, ?, ?, ?, ?)''')
             
             self.conn.commit()
         except: 
@@ -108,7 +108,7 @@ class db:
         try:
             self.cur.execute(tb_create)
            
-            self.cur.execute('''INSERT INTO HashForBlock (hashed_blocks) VALUES (?)''')
+            self.cur.execute('''INSERT INTO HashForBlock (hashed_blocks, Id_No) VALUES (?)''')
             
             self.conn.commit()
         except: 

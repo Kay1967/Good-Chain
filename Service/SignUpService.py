@@ -69,7 +69,7 @@ class SignUpService:
           byte_password = bytes(str(password), 'UTF-8')
           encrypt_password = Transactions.Asym.encrypt(byte_password, public_key)
           self.userRepository.SaveKeys(username, encrypt_password, pbc_ser, prv_ser)
-          self.userRepository.CreateUsersBalance(username, initialbalance, amount_sent = 0, amount_received = 0, fee_paid = 0, fee_gained = 0)
+          self.userRepository.CreateUsersBalance(username, initialbalance, amount_sent = 0, amount_received = 0, fee_paid = 0, fee_gained = 0, mined_reward = 0)
         except:
           raise Exception ("password does not match!")
       else:
