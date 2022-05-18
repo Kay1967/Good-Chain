@@ -27,13 +27,14 @@ class LoginService:
     for check in check_pool_valid:
       rehashed = User.hash_transaction(self, check)
       recheck.append(rehashed)
-    
+    b = False
     hashed_before = self.userRepository.GetAllHashForSecurity()
+    
     for i in range(len(hashed_before)): 
       if hashed_before[i][1] == recheck[i]:
-        print(f"pool number {hashed_before[i][0]} is verified!")
-        time.sleep(0.2)  
+        b = True
       else:
+        b = False
         os.system('color')
         print(f"pool number {hashed_before[i][0]} is", colored('tempered!', 'blue'))
         time.sleep(0.2)
@@ -49,9 +50,7 @@ class LoginService:
     for i in range(len(hashed_before)): 
       if hashed_before[i][1] == recheck[i]:
         b = True
-        print(f"Block number {hashed_before[i][0]} in the chain is verified!")
-        time.sleep(0.2)  
-      else:
+      elif hashed_before[i][1] != recheck[i]:
         b = False
         os.system('color')
         print(f"Block number {hashed_before[i][0]} in the chain is", colored('tempered!', 'red'))

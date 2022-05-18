@@ -26,7 +26,7 @@ class User:
       for receiver in receiver_name:
 
         if receiver[0] == username:
-          print(f"Hi, I am  {receiver[0]} will be the receiver if validated")
+          
           return receiver[0]
 
       else:

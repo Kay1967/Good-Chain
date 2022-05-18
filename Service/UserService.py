@@ -1,3 +1,4 @@
+import os
 from datetime import datetime as dt
 import datetime as dt
 from datetime import timedelta
@@ -25,17 +26,17 @@ class UserService(Client):
     receiver_name = input("please enter the receiver name: ")
     checked_receiver = User.CheckReceiver(self, receiver_name)
     if (receiver_name == checked_receiver):
-      print("Hi, I am ", checked_receiver, "the receiver.")
+      print("This is: ", checked_receiver, "the receiver.")
     else:
       raise ValueError("The given receiver_name is invalid.") 
    
     username = self.tenant
-    print("Hi, I am ", username[0], "the sender.")
+    print("This is: ", username[0], "the sender.")
     if username[0] == checked_receiver:
       raise ValueError ("You cannot send money to yourself!")
     username = self.tenant
     amount_sufficient = Client.CalcSuffAmount(self, username)
-    #valid_transactions = Client.ValidTx(self)
+    
     keys = Client.KeysForMining(self, username)
        
     amount_to_send = float(input("please enter the amount you would like to send: "))
@@ -64,8 +65,9 @@ class UserService(Client):
             self.userRepository.CreateTransactionPool(username[0], checked_receiver, amount_to_send, transaction_fee)
             transaction = self.userRepository.GetLastFromPool()
             check_transaction = User.hash_transaction(self, transaction)
-            self.userRepository.CreateHashForSecurity(check_transaction)
-            print(f"Transaction number {transaction[0]} in the pool.")  
+            transaction_status = 0
+            self.userRepository.CreateHashForSecurity(check_transaction, transaction_status)
+            print(f"Transaction number {transaction[0]} is in the pool now.")  
           except:
             raise Exception("The table is not found.")
         else:
@@ -80,7 +82,7 @@ class UserService(Client):
     today =  dt.now()
     date = today.strftime("%d-%m-%Y")
     time = today.strftime("%H:%M:%S")
-    balance = chk_balance[1] + chk_balance[3] + chk_balance[5] - chk_balance[2] - chk_balance[4]
+    balance = chk_balance[1] + chk_balance[3] + chk_balance[5] + chk_balance[6] - chk_balance[2] - chk_balance[4]
     print(f"User: {username[0]}, you balance on {date} at {time} is: {balance}. ")
     
     print("Please check the last updated details of you balance:")
@@ -90,10 +92,11 @@ class UserService(Client):
           f"amount_sent: {chk_balance[2]} \n"+
           f"amount_received: {chk_balance[3]} \n"+
           f"fee_paid: {chk_balance[4]} \n"+
-          f"fee_gained: {chk_balance[5]} \n" 
+          f"fee_gained: {chk_balance[5]} \n"+
+          f"mined_reward: {chk_balance[6]} \n" 
           )
   time.sleep(0.5)
-  print("I am here")
+  
 
   def ExploreChain(self):
     check_block_valid = self.userRepository.GetAllFromTempBlock()
@@ -106,28 +109,28 @@ class UserService(Client):
     for i in range(len(hashed_before)): 
       if hashed_before[i][1] == recheck[i]:
         b = True
-        #print(f"Block number {hashed_before[i][0]} is verified {b}!")
-        #time.sleep(0.2)  
       else:
         b = False
         os.system('color')
         print(f"Block number {hashed_before[i][0]} is", colored('tempered!', 'yellow'))
         time.sleep(0.2)
 
-    print("Unprocessed Blocks")
-    for i in range(len(check_block_valid)):
-      print(f"=========================== \n"
-            f"Id_No: {check_block_valid[i][0]} \n"+
-            f"Username: {check_block_valid[i][1]} \n"+
-            f"Nonce: {check_block_valid[i][2]} \n"+
-            f"Previous_hash: {check_block_valid[i][3]} \n"+
-            f"Data: {check_block_valid[i][4]} \n"+
-            f"Duration: {check_block_valid[i][5]} \n"+
-            f"Date: {check_block_valid[i][6]} \n"+
-            f"Time: {check_block_valid[i][7]} \n"
-            )
-      time.sleep(0.5)
-    
+    print("Unprocessed Blocks:")
+    if len(check_block_valid) > 0:
+      for i in range(len(check_block_valid)):
+        print(f"=========================== \n"
+              f"Id_No: {check_block_valid[i][0]} \n"+
+              f"Username: {check_block_valid[i][1]} \n"+
+              f"Nonce: {check_block_valid[i][2]} \n"+
+              f"Previous_hash: {check_block_valid[i][3]} \n"+
+              f"Data: {check_block_valid[i][4]} \n"+
+              f"Duration: {check_block_valid[i][5]} \n"+
+              f"Date: {check_block_valid[i][6]} \n"+
+              f"Time: {check_block_valid[i][7]} \n"
+              )
+        time.sleep(0.5)
+    else:
+      print("No block has been mined yet.")
 
   def CheckPool(self):
     check_pool_valid = self.userRepository.GetFromPool()
@@ -142,23 +145,24 @@ class UserService(Client):
       if hashed_before[i][1] == recheck[i]:
         b = True
         
-        #print(f"pool number {hashed_before[i][0]} is verified {b}!")
-       # time.sleep(0.2)  
       else:
         b = False
         print(f"pool number {hashed_before[i][0]} is tempered! {b}")
         time.sleep(0.2)
         
-    print("Unprocessed transactions")
-    for i in range(len(check_pool_valid)):
-      print(f"=========================== \n"
-            f"Tx_No: {check_pool_valid[i][0]} \n"+
-            f"Sender: {check_pool_valid[i][1]} \n"+
-            f"Receiver: {check_pool_valid[i][2]} \n"+
-            f"Tx_value: {check_pool_valid[i][3]} \n"+
-            f"Tx_fee: {check_pool_valid[i][4]} \n"
-            )
-      time.sleep(0.5)
+    print("Unprocessed transactions:")
+    if len(check_pool_valid) > 0:
+      for i in range(len(check_pool_valid)):
+        print(f"=========================== \n"
+              f"Tx_No: {check_pool_valid[i][0]} \n"+
+              f"Sender: {check_pool_valid[i][1]} \n"+
+              f"Receiver: {check_pool_valid[i][2]} \n"+
+              f"Tx_value: {check_pool_valid[i][3]} \n"+
+              f"Tx_fee: {check_pool_valid[i][4]} \n"
+              )
+        time.sleep(0.5)
+    else:
+      print("No transaction has been loaded into the pool")
             
      
   def CancelTransaction(self):
@@ -179,7 +183,6 @@ class UserService(Client):
       else:
         print(f"{username[0]}, you have not placed any transaction in the pool yet.")
         
-    print("I am here")
 
 
   def MineBlock(self):
@@ -187,9 +190,9 @@ class UserService(Client):
     Leading_zero = 2
     
     username = self.tenant
-    #amount_sufficient = Client.CalcSuffAmount(self, username)
+    
     top_valid_transactions = Client.ValidTx(self)
-    #keys = Client.KeysForMining(self, username)
+  
     if top_valid_transactions is None:
       print("The number of transactions in the pool is less than five.")
     elif Client.Already_Mined(self) == False:
@@ -200,10 +203,10 @@ class UserService(Client):
         delimiter = ','
         stringify_tx ='(' + delimiter.join([str(value) for value in tx]) + ')'
         list_stringify_tx.append(stringify_tx)
-      print(list_stringify_tx)
+      
       
       mb = BlocklService.chainblock(self, list_stringify_tx)
-      print(f"gotchya")
+      
             
       block = self.userRepository.GetLastTempBlock()
       if block is None:
@@ -239,7 +242,7 @@ class UserService(Client):
         end_dt = dt.strptime(time, '%H:%M:%S')
         interval_time = end_dt - start_dt
         allowed_mins = timedelta(seconds= 180)
-        print("I am mb[4]: ",mb[4])
+        
         if last_d <= now_d and interval_time.seconds >= allowed_mins.seconds and mb[4] > 10 and mb[4] < 20:
           self.userRepository.CreateTempBlock(username[0], mb[0], mb[1], mb[2], mb[3], mb[4])
           block = self.userRepository.GetLastTempBlock()
@@ -247,7 +250,7 @@ class UserService(Client):
           self.userRepository.CreateHashForBlock(check_block)
         else:
           print(F"{username[0]}, the time interval between your block and the last one is less than 3 minutes.")
-      print("I did it")
+      
         
   
   def ConfirmBlock(self):
@@ -284,9 +287,8 @@ class UserService(Client):
       hashed_before = self.userRepository.GetAllHashForBlock()
       for i in range(len(hashed_before)): 
         if hashed_before[i][1] == recheck[i]:
-          b = True #here I have to add some code to exclude tempered blocks
-          print(f"Block number {hashed_before[i][0]} is verified!")
-          time.sleep(0.2)  
+          b = True 
+
         else:
           b = False
           print(f"Block number {hashed_before[i][0]} is tempered!")
@@ -300,7 +302,7 @@ class UserService(Client):
         list_duration = []
         for i in range(len(mined_blocks)):
           list_duration.append(mined_blocks[i][6])
-        print(list_duration) # I should delete this later
+        
         
         min_duration = min(list_duration)
         print("This is the least time taken for mining a block amongst all: ", min_duration)
@@ -340,7 +342,7 @@ class UserService(Client):
             B = self.userRepository.GetAllFromTempBlock()
             
             for i in range(len(B)):
-              if B[i][6] == min_duration and B[i][3] == Blc[2] and B[i][5] == Blc[4]:
+              if B[i][6] == min_duration and B[i][3] == Blc[2] and B[i][5] == Blc[4] and B[i][3]== B[i][5]:
                 print(f"{B[i][0]} is already added to the Blockchain.")
               else:
                 if B[i][6] == min_duration:
@@ -352,6 +354,31 @@ class UserService(Client):
                     check_blockchain = User.hash_transaction(self, block_in_chain)
                     self.userRepository.CreateHashForChain(check_blockchain)
                     print (f"Success! Valid block is {len(confirming_status)} times verified and added to the chain.")
+                    
+                    top_valid_transactions = Client.ValidTx(self)
+                    
+                    verified_list = top_valid_transactions
+                    
+                    hashed_vl = []
+                    for vl in verified_list:
+                      hash_vl = User.hash_transaction(self, vl)
+                      hashed_vl.append(hash_vl)
+                    hashed_transactions = self.userRepository.GetAllHashForSecurity()
+                    for i in range(len(hashed_transactions)): 
+                      if hashed_transactions[i][1] == hashed_vl[i]:
+                        ht_txNo = hashed_transactions[i][0]
+                        transaction_status = 1 
+                        self.userRepository.UpdateHashForSecurity(transaction_status, ht_txNo)
+                    
+                    delete_mined_tx = self.userRepository.GetAllHashForSecurity()
+                    
+                    for i in range(len(delete_mined_tx)): 
+                      if delete_mined_tx[i][2] == 1:
+                        tx_status = delete_mined_tx[i][2] 
+                        tx_number = delete_mined_tx[i][0]
+                        print(tx_number)
+                        self.userRepository.DeleteConfirmedTransactions(tx_number)
+                        print(f"Confirmed transaction number {tx_number} was deleted.")
                     for i in range(len(B)):
                       self.userRepository.DeleteTempBlock(B[i][0])
                       print(f"Temporary blocks were deleted.")
@@ -394,7 +421,6 @@ class UserService(Client):
 
               status = 'amount_sent'
               self.userRepository.UpdateUserBalance(status, amount_sent, user)
-
             for user in user_list:
               fee_sent = 0
               fee_paid = 0
@@ -422,9 +448,4 @@ class UserService(Client):
             for user in user_list:
               confirmation_status = 0 
               self.userRepository.UpdateConfirmationStatus(confirmation_status, user)
-              print("I am here!")
-            #probably only delete the block which is chained
-
-            
-            
-          print("Seems everything is working seamlessly")
+              

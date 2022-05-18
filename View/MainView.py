@@ -29,8 +29,6 @@ class MainView:
     for i in range(len(hashed_before)): 
       if hashed_before[i][1] == recheck[i]:
         b = True
-        print(f"Block number {hashed_before[i][0]} is verified {b}!")
-        time.sleep(0.2)  
       else:
         b = False
         os.system('color')
@@ -39,15 +37,19 @@ class MainView:
     print(f"================================")
     confirming_users = self.userRepository.GetAllUsers()
     list_confirmed = []
-    for i in range(len(confirming_users)):
-      list_confirmed.append(confirming_users[i][3])
-    username=self.tenant
-    if sum(list_confirmed) == 0: 
-      print(f"{username[0]}, blocks are waiting to be confirmed, if you have not confirmed one.")
-    if sum(list_confirmed) == 1:
-      print(f"{username[0]}, blocks are waiting to be confirmed, if you have not confirmed one.")
-    if sum(list_confirmed) == 2:
-      print(f"{username[0]}, blocks are waiting to be confirmed, if you have not confirmed one.")
+    exist_block = self.userRepository.GetAllFromTempBlock()
+    if len(exist_block) > 0:
+      for i in range(len(confirming_users)):
+        list_confirmed.append(confirming_users[i][3])
+      username=self.tenant
+      if sum(list_confirmed) == 0: 
+        print(f"{username[0]}, blocks are waiting for confirmation, if you have not confirmed one.")
+      if sum(list_confirmed) == 1:
+        print(f"{username[0]}, blocks are waiting for confirmation, if you have not confirmed one.")
+      if sum(list_confirmed) == 2:
+        print(f"{username[0]}, blocks are waiting for confirmation, if you have not confirmed one.")
+    else:
+      print("There is no block mined yet to be confirmed.")
     view = []
     
     view.append([len(view) + 1, 'Transfer Coins', self.userService.TransferCoins])

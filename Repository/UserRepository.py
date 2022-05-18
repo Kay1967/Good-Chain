@@ -185,9 +185,9 @@ class UserRepository:
     userRecord = userEncrypted
     return userRecord
 
-  def UpdateUserBalance(self, status, amount,username):
+  def UpdateUserBalance(self, status, amount, username):
     if status == 'amount_sent':
-      Values = (amount,username)
+      Values = (amount, username)
       sql_statement = '''UPDATE UsersBalance SET amount_sent=? WHERE username=?'''
       try: self.dbContext.executeAndCommit(sql_statement, Values)
       except:
@@ -228,6 +228,18 @@ class UserRepository:
     try: self.dbContext.executeAndCommit(sql_statement, Values)
     except:
        raise ValueError ("Cannot delete the row you required!")
+  
+  def DeleteConfirmedTransactions(self, transaction_number):
+    Values = (transaction_number,)
+    sql_statement = '''DELETE FROM HashForSecurity WHERE Tx_No =?'''
+    try: self.dbContext.executeAndCommit(sql_statement, Values)
+    except:
+       raise ValueError ("Cannot delete the row you required!")
+    
+    sql_statement = '''DELETE FROM TransactionPool WHERE Tx_No =?'''
+    try: self.dbContext.executeAndCommit(sql_statement, Values)
+    except:
+       raise ValueError ("Cannot delete the row you required!")
        
   def UpdateConfirmationStatus(self, confirmation_status, username):
     Values = (confirmation_status, username)
@@ -236,9 +248,9 @@ class UserRepository:
     except:
       raise ValueError ("Cannot update the column!")
   
-  def CreateHashForSecurity(self, hashed_transactions):
-    Values = (hashed_transactions,)
-    sql_statement = '''INSERT INTO HashForSecurity (hashed_transactions) VALUES (?)'''
+  def CreateHashForSecurity(self, hashed_transactions, transaction_status):
+    Values = (hashed_transactions, transaction_status)
+    sql_statement = '''INSERT INTO HashForSecurity (hashed_transactions, transaction_status) VALUES (?, ?)'''
     try:
       self.dbContext.executeAndCommit(sql_statement, Values)
     except:
@@ -258,6 +270,13 @@ class UserRepository:
     for userRecord in userRecords:
       allUsers.append(userRecord)
     return allUsers 
+
+  def UpdateHashForSecurity(self, transaction_status, Tx_No):
+    Values = (transaction_status, Tx_No)
+    sql_statement = '''UPDATE HashForSecurity SET transaction_status=? WHERE Tx_No=?'''
+    try: self.dbContext.executeAndCommit(sql_statement, Values)
+    except:
+      raise ValueError ("Cannot update the column!")
 
   def CreateHashForBlock(self, hashed_blocks):
     Values = (hashed_blocks,)

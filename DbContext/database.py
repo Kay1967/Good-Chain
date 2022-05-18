@@ -94,11 +94,11 @@ class db:
         except: 
             None
         # this is used for validation of the pool
-        tb_create = "CREATE TABLE HashForSecurity (Tx_No INTEGER PRIMARY KEY AUTOINCREMENT, hashed_transactions TEXT)"
+        tb_create = "CREATE TABLE HashForSecurity (Tx_No INTEGER PRIMARY KEY AUTOINCREMENT, hashed_transactions TEXT, transaction_status INTEGER)"
         try:
             self.cur.execute(tb_create)
            
-            self.cur.execute('''INSERT INTO HashForSecurity (hashed_transactions) VALUES (?)''')
+            self.cur.execute('''INSERT INTO HashForSecurity (hashed_transactions, transaction_status) VALUES (?, ?)''')
             
             self.conn.commit()
         except: 

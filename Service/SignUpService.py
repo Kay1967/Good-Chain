@@ -45,7 +45,6 @@ class SignUpService:
       amount_received = None
       fee_paid = None
       fee_gained = None
-      print("yay")
       password = input("please enter a password: ")
       password_repeat = input("please repeat your password: ")
     

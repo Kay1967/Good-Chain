@@ -22,8 +22,9 @@ class Client:
       amount_received = 0
       fee_paid = 0
       fee_gained = 0
+      minied_reward = 0
       initial_balance = user_turnover[1]
-      sufficient_amount = initial_balance + amount_received - amount_sent - fee_paid + fee_gained
+      sufficient_amount = initial_balance + amount_received - amount_sent - fee_paid + fee_gained + mined_reward
       print(sufficient_amount)
       return sufficient_amount
 
@@ -33,9 +34,10 @@ class Client:
       amount_received = user_turnover[3]
       fee_paid = user_turnover[4]
       fee_gained = user_turnover[5]
-      sufficient_amount = initial_balance + amount_received - amount_sent - fee_paid + fee_gained
+      mined_reward = user_turnover[6]
+      sufficient_amount = initial_balance + amount_received - amount_sent - fee_paid + fee_gained + mined_reward
       print(f"Last balance: {sufficient_amount}")
-      return sufficient_amount
+      return sufficient_amount 
 
   def ValidTx(self):
     check_pool_valid = self.userRepository.GetFromPool()
@@ -87,9 +89,9 @@ class Client:
       delimiter = ','
       stringify_tx ='(' + delimiter.join([str(value) for value in tx]) + ')'
       list_stringify_tx.append(stringify_tx)
-    print("this list: ",list_stringify_tx)
+    
     mb = BlocklService.chainblock(self, list_stringify_tx)
-    print(f"gotchya")
+    
     already_mined = self.userRepository.GetAllFromTempBlock()
     new_list_block = []
     list_stringify_data = []
