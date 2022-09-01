@@ -1,21 +1,27 @@
 #from Enum.Permission import Permission
 import os
-from Service.LoginService import LoginService
+from Service.LoginService import *
 from Service.SignUpService import *
 from Service.BlockService import *
+from Service.ServerService import *
 from View.LoginView import LoginView
+from View.ServerView import *
 from Repository.UserRepository import *
 from Domain.User import *
+from threading import Thread
 
 
 class MainView:
-  def __init__(self, tenant, loginService, userService, signUpService, blockService, userRepository):
+  def __init__(self, tenant, loginService, userService, signUpService, blockService, userRepository, serverService, clientService, loginView):
     self.loginService = loginService
     self.userService = userService
     self.signUpService = signUpService
     self.blockService = blockService
     self.tenant = tenant
     self.userRepository = userRepository
+    self.serverService = serverService
+    self.clientService = clientService
+    self.loginView = loginView
 
   def GetMenu(self):
     print(f"================================")
@@ -50,6 +56,18 @@ class MainView:
         print(f"{username[0]}, blocks are waiting for confirmation, if you have not confirmed one.")
     else:
       print("There is no block mined yet to be confirmed.")
+    
+      #recTransaction = Thread(target=self.serverService.recTransactions)
+      # recUser = Thread(target=self.serverService.recUser)
+      # recBlock = Thread(target=self.serverService.recBlockchain)
+      # recVerification = Thread(target=self.serverService.recBlockVerification)
+      #recTransaction.start()
+      #print("server is on...")
+      # recUser.start()
+      # recBlock.start()
+      # recVerification.start()
+      #return 
+
     view = []
     
     view.append([len(view) + 1, 'Transfer Coins', self.userService.TransferCoins])
@@ -59,6 +77,10 @@ class MainView:
     view.append([len(view) + 1, 'Cancel a Transaction', self.userService.CancelTransaction])
     view.append([len(view) + 1, 'Mine a Block', self.userService.MineBlock])
     view.append([len(view) + 1, 'Confirm a Block', self.userService.ConfirmBlock])
-    view.append([0, 'Log out', self.loginService.close]) 
+    view.append([0, 'Log out', self.loginView.GetMenu]) 
 
     return view
+
+    
+
+    

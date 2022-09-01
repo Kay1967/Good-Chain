@@ -1,10 +1,14 @@
 import os
+from datetime import datetime as dt
+import datetime as dt
+from datetime import timedelta
+import time
 from Component.UserInterface import *
 import Transactions
 from Transactions.Signature import *
 from Transactions.BlockChain import *
-import tabulate
-from tabulate import tabulate
+#import tabulate
+#from tabulate import tabulate
 from termcolor import colored
 from Domain.User import *
 
@@ -17,6 +21,7 @@ class BlocklService:
     #self.tenant = tenant
     self.userRepository = userRepository
     #self.userService = userService
+    
   def Block(self):
     all_blocks = self.userRepository.GetAllBlocks()
     if len(all_blocks) == 0:
@@ -28,9 +33,14 @@ class BlocklService:
       previous_hash = Gn.previousHash
       data = Gn.data
       current_hash = Gn.currentHash
-      self.userRepository.CreateBlockChain(nonce, previous_hash, data, current_hash)
+      today =  dt.now()
+      date = today.strftime("%d-%m-%Y")
+      time = today.strftime("%H:%M:%S")
+      gen_block = (nonce, previous_hash, data, current_hash, date, time)
+      self.userRepository.CreateBlockChain(gen_block)
       block_in_chain = self.userRepository.GetLastBlock()
-      check_blockchain = User.hash_transaction(self, block_in_chain)
+      block_for_hash = (block_in_chain[0], block_in_chain[1], block_in_chain[2], block_in_chain[3], block_in_chain[4])
+      check_blockchain = hash_func(str(block_for_hash))
       self.userRepository.CreateHashForChain(check_blockchain)
     
     #if all_blocks[0][0] == 1 and all_blocks[0][3] == "Genesis":

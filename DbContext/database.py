@@ -18,40 +18,40 @@ class db:
         self.reset()
 
     def reset(self):
-        self.conn = sqlite3.connect(self.db_name) 
+        self.conn = sqlite3.connect(self.db_name, check_same_thread=False) 
         self.cur = self.conn.cursor()
 
         # create user table if it does not exist
-        tb_create = "CREATE TABLE users (username TEXT, password BLOB, initialbalance INTEGER, confirmation_status INTEGER)"
+        tb_create = "CREATE TABLE users (user_Id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password BLOB, initialbalance INTEGER, confirmation_status INTEGER, date TEXT, time TEXT)"
         try:
             self.cur.execute(tb_create)
             # add sample records to the db manually
             
-            self.cur.execute('''INSERT INTO users (username, password, initialbalance, confirmation_status) VALUES (?, ?, ?, ?)''')
+            self.cur.execute('''INSERT INTO users (username, password, initialbalance, confirmation_status, date, time) VALUES (?, ?, ?, ?, ?, ?)''')
             
             self.conn.commit()
         except: 
             None
       
         #create keys table
-        tb_create = "CREATE TABLE SaveKeys (username TEXT, password BLOB, public_key BLOB, private_key BLOB)"
+        tb_create = "CREATE TABLE SaveKeys (key_Id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password BLOB, public_key BLOB, private_key BLOB, date TEXT, time TEXT)"
         try:
             self.cur.execute(tb_create)
             # add sample records to the db manually
-            lastLogin = dt.now() - timedelta(days=15)
-            date = lastLogin.strftime("%d-%m-%Y")
-            self.cur.execute('''INSERT INTO SaveKeys (username, password, public_key, private_key) VALUES (?, ?, ?, ?)''')
+            #lastLogin = dt.now() - timedelta(days=15)
+            #date = lastLogin.strftime("%d-%m-%Y")
+            self.cur.execute('''INSERT INTO SaveKeys (username, password, public_key, private_key, date, time) VALUES (?, ?, ?, ?, ?, ?)''')
             
             self.conn.commit()
         except: 
             None
 
         # create transaction table    
-        tb_create = "CREATE TABLE TransactionPool (Tx_No INTEGER PRIMARY KEY AUTOINCREMENT, Sender_username TEXT, Receiver_username TEXT, Tx_value REAL, Tx_fee REAL, date TEXT, time TEXT)"
+        tb_create = "CREATE TABLE TransactionPool (Tx_No INTEGER PRIMARY KEY AUTOINCREMENT, Sender_username TEXT, Receiver_username TEXT, Tx_value REAL, Tx_fee REAL, sig TEXT, date TEXT, time TEXT)"
         try:
             self.cur.execute(tb_create)
             
-            self.cur.execute('''INSERT INTO TransactionPool (Sender_username, Receiver_username, Tx_value, Tx_fee, date, time) VALUES (?, ?, ?, ?, ?, ?)''')
+            self.cur.execute('''INSERT INTO TransactionPool (Sender_username, Receiver_username, Tx_value, Tx_fee, sig, date, time) VALUES (?, ?, ?, ?, ?, ?, ?)''')
             
             self.conn.commit()
         except: 
@@ -83,10 +83,9 @@ class db:
         except: 
             None
         #create wallet
-        tb_create = "CREATE TABLE UsersBalance (username TEXT, initialbalance INTEGER, amount_sent INTEGER DEFAULT 0, amount_received INTEGER DEFAULT 0, fee_paid INTEGER DEFAULT 0, fee_gained INTEGER DEFAULT 0, mined_reward INTEGER DEFAULT 0)"
+        tb_create = "CREATE TABLE UsersBalance (balance_Id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, initialbalance INTEGER, amount_sent INTEGER DEFAULT 0, amount_received INTEGER DEFAULT 0, fee_paid INTEGER DEFAULT 0, fee_gained INTEGER DEFAULT 0, mined_reward INTEGER DEFAULT 0)"
         try:
             self.cur.execute(tb_create)
-           
             
             self.cur.execute('''INSERT INTO UsersBalance (username, initialbalance, amount_sent, amount_received, fee_paid, fee_gained, mined_reward) VALUES (?, ?, ?, ?, ?, ?, ?)''')
             

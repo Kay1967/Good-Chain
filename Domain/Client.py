@@ -4,37 +4,48 @@ import re
 from Repository.UserRepository import *
 from Service.UserService import *
 from Service.BlockService import *
+import socket, pickle
+import time
 
 class Client:
+  
+
+#class ClientService:
+
+  #def __init__(self):
+  #TCP_IP = '127.0.0.1'#'172.25.237.64'
+  #BUFFER_SIZE = 1024
   valid_tx = None
   already_mined = None
   sufficient_balance = None
   def __init__(self, tenant, userRepository):
     self.tenant = tenant
     self.userRepository = userRepository
+    self.TCP_IP = '172.25.237.64'
+    self.BUFFER_SIZE = 1024
     #self.userService = userService
 
   def CalcSuffAmount(self, tenant):
     username = tenant
-    user_turnover = self.userRepository.GetUserBalance(username[0])
-    if username[0] == user_turnover[0] and user_turnover[2] is None and user_turnover[3] is None and user_turnover[4] is None and user_turnover[5] is None:
+    user_turnover = self.userRepository.GetUserBalance(username[1])
+    if username[1] == user_turnover[1] and user_turnover[3] is None and user_turnover[4] is None and user_turnover[5] is None and user_turnover[6] is None:
       amount_sent = 0
       amount_received = 0
       fee_paid = 0
       fee_gained = 0
       minied_reward = 0
-      initial_balance = user_turnover[1]
+      initial_balance = user_turnover[2]
       sufficient_amount = initial_balance + amount_received - amount_sent - fee_paid + fee_gained + mined_reward
       print(sufficient_amount)
       return sufficient_amount
 
-    elif  username[0] == user_turnover[0] and user_turnover[2] is not None and user_turnover[3] is not None and user_turnover[4] is not None and user_turnover[5] is not None:
-      initial_balance = user_turnover[1]
-      amount_sent = user_turnover[2]
-      amount_received = user_turnover[3]
-      fee_paid = user_turnover[4]
-      fee_gained = user_turnover[5]
-      mined_reward = user_turnover[6]
+    elif  username[1] == user_turnover[1] and user_turnover[3] is not None and user_turnover[4] is not None and user_turnover[5] is not None and user_turnover[6] is not None:
+      initial_balance = user_turnover[2]
+      amount_sent = user_turnover[3]
+      amount_received = user_turnover[4]
+      fee_paid = user_turnover[5]
+      fee_gained = user_turnover[6]
+      mined_reward = user_turnover[7]
       sufficient_amount = initial_balance + amount_received - amount_sent - fee_paid + fee_gained + mined_reward
       print(f"Last balance: {sufficient_amount}")
       return sufficient_amount 
@@ -61,22 +72,22 @@ class Client:
     for tmprd in tempered: 
       print(f"Tempered transaction(s) number {tmprd[0]} is/are not loaded into the block.")
     #return txlist_for_mine
-    if len(txlist_for_mine) >= 5 and len(txlist_for_mine) <= 10:
+    if len(txlist_for_mine) >= 1  and len(txlist_for_mine) <= 10:
       count = len(txlist_for_mine)
       top_largest = nlargest(count, check_pool_valid, key=itemgetter(4))
       return txlist_for_mine
 
   def KeysForMining(self, tenant):
 
-      object_sender = self.userRepository.GetKeys(tenant[0])
+      object_sender = self.userRepository.GetKeys(tenant[1])
       if object_sender is not None:
-        pubkey_sender = object_sender[2]
-        prvkey_sender = object_sender[3]
+        pubkey_sender = object_sender[3]
+        prvkey_sender = object_sender[4]
         pbcKey_sender = serialization.load_pem_public_key(pubkey_sender)
         prvKey_sender = serialization.load_pem_private_key(prvkey_sender,password=None)
-      object_receiver = self.userRepository.GetKeys(tenant[0])
+      object_receiver = self.userRepository.GetKeys(tenant[1])
       if object_receiver is not None:
-        pubkey_receiver = object_receiver[2]
+        pubkey_receiver = object_receiver[3]
         pbcKey_receiver = serialization.load_pem_public_key(pubkey_receiver)
 
         return pbcKey_sender, pbcKey_receiver, prvKey_sender
@@ -117,3 +128,21 @@ class Client:
     else:
       return True
     
+  def sendObject(self, transaction, tcpPort):
+      try:
+          s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+          s.connect((self.TCP_IP, tcpPort))
+          s.send(pickle.dumps(transaction))
+          # s.setblocking(False)
+          data = s.recv(self.BUFFER_SIZE)
+          if data == b'1':
+              print('item successfully added to other node')
+              s.close()
+              return True
+          else:
+              print('item failed to add to the other node and will be removed.0')
+              s.close()
+              return False
+      except:
+          print('item failed to add to the other node and will be removed.1')
+          return False

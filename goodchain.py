@@ -1,14 +1,15 @@
-
 from Service.LoginService import LoginService
 from startup import ServiceCollection
 from Component.UserInterface import UserInterfaceComponent
 from DbContext.database import * 
 from View.MainView import MainView
 from View.LoginView import LoginView
+from View.ServerView import *
 from Domain.User import *
 import sqlite3
 from termcolor import colored
 import time
+
 
 Heading = '''
 Public Menu
@@ -28,8 +29,6 @@ def CreateMainMenuHeader(tenantName, tenantTypeName):
 '''.format(nameAndSpaces, userTypeAndSpaces)
 
 
-
-
 # GLobal Variables
 # --------------------------------------------------------------------
 max_input_try = 3
@@ -44,13 +43,20 @@ serviceCollection.ConfigureLoginDependencies()
 # View calls Service, and Service calls Repository and Repository reflects always the data layer (database)
 
 if __name__ == "__main__":
-    loginService = LoginService(serviceCollection.UserRepository, serviceCollection.UserService)
+    loginService = LoginService(serviceCollection.UserRepository, serviceCollection.UserService, serviceCollection.ServerService, serviceCollection.ClientService)
+    
     loginService.GenesisBlock()
     loginService.checks()
-    loginView = LoginView(serviceCollection.LoginService, serviceCollection.SignUpService, serviceCollection.BlockService)
+    loginService.serverOn()
+    
+    #serverView = ServerView(serviceCollection.LoginService, serviceCollection.SignUpService, serviceCollection.BlockService, serviceCollection.ServerService, serviceCollection.ClientService)
+    loginView = LoginView(serviceCollection.LoginService, serviceCollection.SignUpService, serviceCollection.BlockService, serviceCollection.ServerService) #serviceCollection.User
     
     loginInterface = UserInterfaceComponent(loginView, True, Heading)
+    #serverInterface = UserInterfaceComponent(serverView, True, None)
     loginInterface.run()
+    #serverInterface.run()
+    #loginService.serverView()
     if serviceCollection.LoginService.loggedin:
         serviceCollection.ConfigureServicesOnLogin()
         mainView = MainView(serviceCollection.LoginService.tenant, 
@@ -58,13 +64,18 @@ if __name__ == "__main__":
                             serviceCollection.UserService,
                             serviceCollection.SignUpService,
                             serviceCollection.BlockService,
-                            serviceCollection.UserRepository
-                            ) 
+                            serviceCollection.UserRepository,
+                            serviceCollection.ServerService,
+                            serviceCollection.ClientService,
+                            serviceCollection.LoginView) 
                     
-        mainHeading = CreateMainMenuHeader(serviceCollection.LoginService.tenant[0], type(serviceCollection.LoginService.tenant).__name__)
+        mainHeading = CreateMainMenuHeader(serviceCollection.LoginService.tenant[1], type(serviceCollection.LoginService.tenant).__name__)
      
         mainInterface = UserInterfaceComponent(mainView, False, mainHeading)
+        
         mainInterface.run()
-
+        
         dbContext.conn.close()
+        
+        
     
